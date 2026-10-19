@@ -1,0 +1,10 @@
+# Install this IN ADDITION to requirements.txt to train and serve the deep-learning models
+# (LSTM and BERT). One framework (Keras 3 on TensorFlow) is used for both.
+-r requirements.txt
+tensorflow-cpu>=2.16     # use `tensorflow` instead if you have a GPU
+keras>=3.3
+keras-hub>=0.16          # BERT presets + tokenizer
+
+# ---- dev / tests ----
+pytest>=8.0
+httpx>=0.27

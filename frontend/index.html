@@ -1,0 +1,314 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>PhishLens – Email phishing detector</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;800&family=Newsreader:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/static/css/style.css">
+</head>
+<body>
+<div class="shell" id="authWrap">
+  <div class="auth" id="authScreen">
+    <div class="auth-main">
+      <div class="seg" id="authSeg" role="tablist" aria-label="Account">
+        <button type="button" role="tab" id="tabLogin" aria-selected="true" data-auth="login">Log in</button>
+        <button type="button" role="tab" id="tabRegister" aria-selected="false" data-auth="register">Create account</button>
+      </div>
+      <div class="banner info" id="authNotice" hidden></div>
+
+      <form id="loginForm" novalidate autocomplete="on">
+        <div class="banner ok" id="loginOk" role="status" hidden></div>
+        <div class="banner err" id="loginErr" role="alert" hidden></div>
+        <div class="field"><label for="liEmail">Email</label><input type="email" id="liEmail" autocomplete="email"><div class="ferr" id="liEmailErr"></div></div>
+        <div class="field"><label for="liPw">Password</label><div class="pw"><input type="password" id="liPw" autocomplete="current-password"><button type="button" class="pwtoggle" data-target="liPw" aria-label="Show password">Show</button></div><div class="ferr" id="liPwErr"></div></div>
+        <div style="text-align:right;margin:-8px 0 14px"><button type="button" class="linkbtn" data-auth="forgot">Forgot password?</button></div>
+        <button class="btn wide" id="loginBtn" type="submit">Log in</button>
+      </form>
+
+      <form id="registerForm" novalidate autocomplete="on" hidden>
+        <div class="banner err" id="regErr" role="alert" hidden></div>
+        <div class="field"><label for="rgName">Full name</label><input type="text" id="rgName" autocomplete="name"><div class="ferr" id="rgNameErr"></div></div>
+        <div class="field"><label for="rgEmail">Email</label><input type="email" id="rgEmail" autocomplete="email"><div class="ferr" id="rgEmailErr"></div></div>
+        <div class="field"><label for="rgPw">Password</label><div class="pw"><input type="password" id="rgPw" autocomplete="new-password" aria-describedby="pwHelp"><button type="button" class="pwtoggle" data-target="rgPw" aria-label="Show password">Show</button></div>
+          <div class="strength" id="strength" data-level="0" aria-hidden="true"><i></i><i></i><i></i><i></i></div>
+          <div class="strength-txt" id="pwHelp"></div><div class="ferr" id="rgPwErr"></div></div>
+        <div class="field"><label for="rgPw2">Confirm password</label><div class="pw"><input type="password" id="rgPw2" autocomplete="new-password"><button type="button" class="pwtoggle" data-target="rgPw2" aria-label="Show password">Show</button></div><div class="ferr" id="rgPw2Err"></div></div>
+        <button class="btn wide" id="registerBtn" type="submit">Create account</button>
+      </form>
+
+      <form id="forgotForm" novalidate hidden>
+        <h3>Reset your password</h3>
+        <p class="sub">Enter the email you registered with and we will send you a 6-digit code.</p>
+        <div class="banner err" id="fgErr" role="alert" hidden></div>
+        <div class="field"><label for="fgEmail">Email</label><input type="email" id="fgEmail" autocomplete="email" placeholder="you@example.com"><div class="ferr" id="fgEmailErr"></div></div>
+        <button class="btn wide" id="forgotBtn" type="submit">Send reset code</button>
+        <p class="switch"><button type="button" class="linkbtn" data-auth="login">Back to log in</button></p>
+      </form>
+
+      <form id="resetForm" novalidate hidden>
+        <h3>Enter your code</h3>
+        <p class="sub" id="rsSub"></p>
+        <div class="demomail" id="demoMail" hidden></div>
+        <div class="banner err" id="rsErr" role="alert" hidden></div>
+        <div class="field"><label for="rsCode">6-digit code</label><input type="text" id="rsCode" inputmode="numeric" autocomplete="one-time-code" maxlength="6" placeholder="123456"><div class="ferr" id="rsCodeErr"></div></div>
+        <div class="field"><label for="rsPw">New password</label><div class="pw"><input type="password" id="rsPw" autocomplete="new-password"><button type="button" class="pwtoggle" data-target="rsPw" aria-label="Show password">Show</button></div>
+          <div class="strength" id="rsStrength" data-level="0" aria-hidden="true"><i></i><i></i><i></i><i></i></div>
+          <div class="strength-txt" id="rsHelp">Use at least 6 characters with letters and numbers.</div><div class="ferr" id="rsPwErr"></div></div>
+        <div class="field"><label for="rsPw2">Confirm new password</label><div class="pw"><input type="password" id="rsPw2" autocomplete="new-password"><button type="button" class="pwtoggle" data-target="rsPw2" aria-label="Show password">Show</button></div><div class="ferr" id="rsPw2Err"></div></div>
+        <button class="btn wide" id="resetBtn" type="submit">Set new password</button>
+        <p class="switch">Did not get a code? <button type="button" class="linkbtn" id="resendBtn">Send a new code</button></p>
+        <p class="switch" style="margin-top:6px"><button type="button" class="linkbtn" data-auth="login">Back to log in</button></p>
+      </form>
+
+      <form id="totpSetupForm" novalidate hidden>
+        <h3>Turn on two-factor authentication</h3>
+        <p class="sub">Scan this QR code with Google Authenticator, Authy, or a similar app, then enter the 6-digit code. Once it is on, it stays on. If you skip, we will ask again the next time you log in.</p>
+        <div class="qrbox"><div id="tsQr" class="qrimg" role="img" aria-label="QR code to scan into your authenticator app"></div>
+        </div>
+        <div class="banner err" id="tsErr" role="alert" hidden></div>
+        <div class="field"><label for="tsCode">Enter the 6-digit code from the app</label><input type="text" id="tsCode" inputmode="numeric" autocomplete="one-time-code" maxlength="6" placeholder="123456"><div class="ferr" id="tsCodeErr"></div></div>
+        <button class="btn wide" id="tsConfirmBtn" type="submit">Confirm and turn on</button>
+        <p class="switch"><button type="button" class="linkbtn" id="tsSkipBtn">Skip for now</button></p>
+      </form>
+
+      <form id="totpVerifyForm" novalidate hidden>
+        <div class="shield" aria-hidden="true"><svg width="34" height="34" viewBox="0 0 24 24" fill="none"><path d="M12 3l7 3v5c0 4.5-3 7.5-7 9-4-1.5-7-4.5-7-9V6l7-3z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><path d="M9 12l2 2 4-4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+        <h3>Verify your identity</h3>
+        <p class="sub" id="tvSub">Open your authenticator app and enter the current code.</p>
+        <p class="setuphelp" style="margin:0 auto 16px">Codes refresh every 30 seconds. If one is rejected, wait for the next one and try again.</p>
+        <div class="banner err" id="tvErr" role="alert" hidden></div>
+        <div class="field"><label for="tvCode" id="tvCodeLabel">6-digit code</label><input type="text" id="tvCode" inputmode="numeric" autocomplete="one-time-code" maxlength="6" placeholder="123456"><div class="ferr" id="tvCodeErr"></div></div>
+        <button class="btn wide" id="tvConfirmBtn" type="submit">Verify and log in</button>
+        <p class="switch" style="margin-top:6px"><button type="button" class="linkbtn" id="tvCancelBtn">Cancel and log out</button></p>
+      </form>
+    </div>
+  </div>
+</div>
+
+<div class="shell" id="app" hidden>
+  <header class="top">
+    <div class="brand">
+      <svg width="40" height="40" viewBox="0 0 40 40" aria-hidden="true"><rect width="40" height="40" rx="10" fill="var(--accent)"/><rect x="8" y="12" width="24" height="16" rx="3" fill="none" stroke="var(--on-accent)" stroke-width="2"/><path d="M9 14l11 8 11-8" fill="none" stroke="var(--on-accent)" stroke-width="2" stroke-linejoin="round"/><circle cx="29" cy="27" r="6" fill="var(--surface)" stroke="var(--on-accent)" stroke-width="2"/><path d="M33.5 31.5L37 35" stroke="var(--on-accent)" stroke-width="2.5" stroke-linecap="round"/></svg>
+      <div><h1>PhishLens</h1><p>Check an email with machine learning and deep learning models</p></div>
+    </div>
+    <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center">
+      <div class="tabs" role="tablist" aria-label="Sections">
+        <button class="tab" role="tab" aria-selected="true" data-tab="analyze">Analyze email</button>
+        <button class="tab" role="tab" aria-selected="false" data-tab="saved">Saved emails<span id="savedCount">0</span></button>
+        <button class="tab" role="tab" aria-selected="false" data-tab="models">Models</button>
+        <button class="tab" role="tab" aria-selected="false" data-tab="history">History</button>
+        <button class="tab" role="tab" aria-selected="false" data-tab="batch">Batch</button>
+        <button class="tab" role="tab" aria-selected="false" data-tab="settings">Settings</button>
+        <button class="tab" role="tab" aria-selected="false" data-tab="admin" id="adminTabBtn" hidden>Admin</button>
+      </div>
+      <button class="theme" id="themeBtn" type="button">Dark mode</button>
+      <div class="userchip"><div class="avatar" id="avatar" aria-hidden="true">?</div><div class="who"><b id="uName"></b><span id="uEmail"></span></div><button class="theme" id="logoutBtn" type="button" style="border-radius:9px">Log out</button></div>
+    </div>
+  </header>
+
+  <!-- ANALYZE -->
+  <section id="view-analyze" role="tabpanel">
+    <div class="grid">
+      <div class="panel">
+        <h2>Email to check</h2>
+        <p class="sub">Write or paste an email, analyze it, and save it to your account.</p>
+        <div class="draftbar"><span id="draftState">New email, not saved yet</span><button class="btn ghost small" id="newBtn" type="button">New email</button></div>
+        <div class="samples" aria-label="Sample emails">
+          <button class="chip-btn" type="button" data-sample="bank">Bank alert</button>
+          <button class="chip-btn" type="button" data-sample="prize">Prize winner</button>
+          <button class="chip-btn" type="button" data-sample="parcel">Parcel delivery</button>
+          <button class="chip-btn" type="button" data-sample="real">Normal email</button>
+        </div>
+        <div class="field"><label for="from">From</label><input type="text" id="from" placeholder='Name &lt;address@example.com&gt;'></div>
+        <div class="field"><label for="subject">Subject</label><input type="text" id="subject" placeholder="Subject line"></div>
+        <div class="field"><label for="body">Body</label><textarea id="body" placeholder="Paste the email text here, including any links"></textarea></div>
+        <div class="field"><label for="label">Label (for your training data)</label>
+          <select id="label"><option value="">Not labeled</option><option value="phishing">Phishing</option><option value="legitimate">Legitimate</option></select></div>
+        <div class="actions">
+          <button class="btn" id="analyzeBtn" type="button">Analyze email</button>
+          <button class="btn ghost" id="saveBtn" type="button">Save email</button>
+          <button class="btn ghost" id="saveNewBtn" type="button" hidden>Save as new</button>
+        </div>
+        <div class="status" id="status" role="status" aria-live="polite"></div>
+      </div>
+
+      <div class="panel" id="resultPanel" aria-live="polite">
+        <h2>Result</h2>
+        <p class="sub">Each model gives its own score, and the ensemble combines them.</p>
+        <div class="empty" id="emptyState"><strong>No email analyzed yet</strong>Load a sample or paste an email, then select Analyze email.</div>
+        <div id="result" hidden></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- SAVED -->
+  <section id="view-saved" role="tabpanel" hidden>
+    <div class="panel">
+      <h2>Saved emails</h2>
+      <p class="sub">Emails stored in the database. Open one to edit it or analyze it again.</p>
+      <div class="stats" id="savedStats"></div>
+      <div class="toolbar">
+        <div><label for="filterLabel">Show</label>
+          <select id="filterLabel"><option value="all">All emails</option><option value="phishing">Labeled phishing</option><option value="legitimate">Labeled legitimate</option><option value="none">Not labeled</option></select></div>
+        <button class="btn small" id="newFromSaved" type="button">New email</button>
+        <button class="btn ghost small" id="exportBtn" type="button" hidden>Download as CSV</button>
+      </div>
+      <div class="status" id="savedStatus" role="status" aria-live="polite" style="margin:-4px 0 12px"></div>
+      <div class="empty" id="savedEmpty"><strong>No saved emails yet</strong>Write a new email on the Analyze tab and select Save email.</div>
+      <div class="tablewrap" id="savedWrap" hidden>
+        <table>
+          <thead><tr><th>Saved</th><th>Email</th><th>Sender</th><th>Label</th><th>Verdict</th><th class="num">Actions</th></tr></thead>
+          <tbody id="savedBody"></tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <!-- MODELS -->
+  <section id="view-models" role="tabpanel" hidden>
+    <div class="panel" style="margin-bottom:20px">
+      <h2>How an email is processed</h2>
+      <p class="sub">The same pipeline runs for every model you train.</p>
+      <div class="flow">
+        <div class="step"><b>Raw email</b><span>Headers, subject, body, links</span></div>
+        <div class="step"><b>Cleaning</b><span>Strip HTML, lowercase, tokenize</span></div>
+        <div class="step"><b>Features</b><span>TF-IDF, URL and header features, embeddings</span></div>
+        <div class="step"><b>Models</b><span>Naive Bayes, Random Forest, LSTM, BERT</span></div>
+        <div class="step"><b>Ensemble</b><span>Average or weighted vote</span></div>
+        <div class="step"><b>Verdict</b><span>Score, evidence, explanation</span></div>
+      </div>
+    </div>
+    <div class="panel">
+      <h2>Model performance</h2>
+      <div class="banner info" id="modelsNotice" hidden></div>
+      <p class="sub" id="modelsSub">Measured on a held-out test set.</p>
+      <div class="tablewrap">
+        <table id="metricsTable">
+          <thead><tr><th>Model</th><th>Type</th><th class="num">Accuracy</th><th class="num">Precision</th><th class="num">Recall</th><th class="num">F1</th><th class="num">Speed</th></tr></thead>
+          <tbody></tbody>
+        </table>
+      </div>
+      <h4 style="margin-top:28px">Confusion matrix</h4>
+      <div class="field" style="max-width:260px;margin-top:8px"><label for="cmSelect">Model</label><select id="cmSelect"></select></div>
+      <div class="cmgrid" id="cm"></div>
+    </div>
+  </section>
+
+  <!-- HISTORY -->
+  <section id="view-history" role="tabpanel" hidden>
+    <div class="panel">
+      <h2>History</h2>
+      <p class="sub">The last 100 emails analyzed. This list is kept in the database.</p>
+      <div class="stats" id="stats"></div>
+      <div class="empty" id="histEmpty"><strong>Nothing here yet</strong>Analyze an email and it will appear in this list.</div>
+      <div class="tablewrap" id="histWrap" hidden>
+        <table>
+          <thead><tr><th>Time</th><th>Sender</th><th>Subject</th><th>Verdict</th><th class="num">Risk</th></tr></thead>
+          <tbody id="histBody"></tbody>
+        </table>
+      </div>
+      <div class="actions" style="margin-top:16px" id="histActions" hidden><button class="btn ghost" id="histClear" type="button">Clear history</button></div>
+    </div>
+  </section>
+
+  <!-- BATCH -->
+  <section id="view-batch" role="tabpanel" hidden>
+    <div class="panel" style="margin-bottom:20px">
+      <h2>Batch analysis</h2>
+      <p class="sub">Upload a CSV with <code>sender</code>, <code>subject</code> and <code>body</code> columns (a <code>from</code> column also works for sender) to score many emails at once. The file is sent to the server for analysis, and every scan is added to your history.</p>
+      <label class="fileinput" id="batchDrop" for="batchFile">
+        <strong>Choose a CSV file</strong>
+        Any file size. The first row should be column headers.
+        <input type="file" id="batchFile" accept=".csv,text/csv">
+      </label>
+      <div class="status" id="batchStatus" role="status" aria-live="polite"></div>
+    </div>
+    <div class="panel" id="batchResultsPanel" hidden>
+      <h2>Results</h2>
+      <div class="stats" id="batchStats"></div>
+      <div class="actions" style="margin-bottom:16px">
+        <button class="btn ghost small" id="batchExportBtn" type="button" hidden>Download results as CSV</button>
+        <button class="btn small" id="batchSaveAllBtn" type="button" hidden>Save all to my saved emails</button>
+      </div>
+      <div class="tablewrap">
+        <table>
+          <thead><tr><th>#</th><th>Subject</th><th>Sender</th><th>Verdict</th><th class="num">Risk</th></tr></thead>
+          <tbody id="batchBody"></tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <!-- SETTINGS -->
+  <section id="view-settings" role="tabpanel" hidden>
+    <div class="panel" style="margin-bottom:20px">
+      <h2>Change password</h2>
+      <p class="sub">You'll need your current password to set a new one.</p>
+      <div class="banner err" id="pwErr" role="alert" hidden></div>
+      <div class="banner ok" id="pwOk" role="status" hidden></div>
+      <div class="field"><label for="curPw">Current password</label><div class="pw"><input type="password" id="curPw" autocomplete="current-password"><button type="button" class="pwtoggle" data-target="curPw" aria-label="Show password">Show</button></div><div class="ferr" id="curPwErr"></div></div>
+      <div class="field"><label for="newPw">New password</label><div class="pw"><input type="password" id="newPw" autocomplete="new-password"><button type="button" class="pwtoggle" data-target="newPw" aria-label="Show password">Show</button></div><div class="ferr" id="newPwErr"></div></div>
+      <div class="field"><label for="newPw2">Confirm new password</label><div class="pw"><input type="password" id="newPw2" autocomplete="new-password"><button type="button" class="pwtoggle" data-target="newPw2" aria-label="Show password">Show</button></div><div class="ferr" id="newPw2Err"></div></div>
+      <button class="btn" id="changePwBtn" type="button">Update password</button>
+    </div>
+
+    <div class="panel">
+      <h2>Two-factor authentication</h2>
+      <p class="sub">Add a second step at login using an authenticator app. Once it is on, it cannot be turned off.</p>
+      <div class="twofa-status">
+        <div><b><span class="dot" id="tfDot"></span><span id="tfStatusText">Checking…</span></b><span id="tfStatusSub"></span></div>
+        <div class="actions" style="margin:0">
+          <button class="btn small" id="tfEnableBtn" type="button" hidden>Turn on two-factor authentication</button>
+        </div>
+      </div>
+      <div class="banner err" id="setupErr" role="alert" hidden></div>
+
+      <div id="tfSetupPanel" hidden>
+        <div class="qrbox"><div id="setQr" class="qrimg" role="img" aria-label="QR code to scan into your authenticator app"></div>
+        </div>
+        <div class="field"><label for="setCode">Enter the 6-digit code from the app</label><input type="text" id="setCode" inputmode="numeric" maxlength="6" placeholder="123456"><div class="ferr" id="setCodeErr"></div></div>
+        <div class="actions"><button class="btn" id="setConfirmBtn" type="button">Confirm and turn on</button><button class="btn ghost" id="setCancelBtn" type="button">Cancel</button></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ADMIN -->
+  <section id="view-admin" role="tabpanel" hidden>
+    <div class="panel" style="margin-bottom:20px">
+      <h2>Admin dashboard</h2>
+      <p class="sub">An overview across every account on this deployment. You see this because your account claimed the admin role when it registered.</p>
+      <div class="stats" id="adminStats"></div>
+      <h4>Verdicts across all analyses</h4>
+      <div class="models" id="adminVerdictBars"></div>
+      <p class="note">Totals include every analysis ever run, even ones users cleared from their own history.</p>
+    </div>
+    <div class="panel" style="margin-bottom:20px">
+      <h2>Users</h2>
+      <div class="tablewrap">
+        <table>
+          <thead><tr><th>Name</th><th>Email</th><th>Joined</th><th>2FA</th><th class="num">Saved emails</th></tr></thead>
+          <tbody id="adminUsersBody"></tbody>
+        </table>
+      </div>
+    </div>
+    <div class="panel">
+      <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap"><h2>Recent activity (all users)</h2><div class="actions" style="margin:0"><button class="btn ghost small" id="adminRefreshBtn" type="button">Refresh</button><button class="btn ghost small" id="adminReloadBtn" type="button">Reload models</button></div></div>
+      <div class="status" id="adminStatus" role="status" aria-live="polite"></div>
+      <div class="tablewrap">
+        <table>
+          <thead><tr><th>Time</th><th>User</th><th>Subject</th><th>Verdict</th><th class="num">Risk</th></tr></thead>
+          <tbody id="adminActivityBody"></tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+</div>
+
+<noscript><p style="padding:20px">PhishLens needs JavaScript.</p></noscript>
+<!-- V of MVC lives in this file + static/js/views, C in static/js/controllers, M in static/js/models -->
+<script type="module" src="/static/js/app.js"></script>
+</body>
+</html>

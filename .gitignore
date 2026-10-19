@@ -1,0 +1,17 @@
+cat > .gitignore <<'EOF'
+# secrets
+.env
+.dev_secret_key
+# python
+__pycache__/
+*.pyc
+env/
+venv/
+.venv/
+# databases
+*.db
+*.db-shm
+*.db-wal
+# datasets (real phishing e-mail, large files)
+backend/data/*.csv
+EOF
